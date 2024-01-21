@@ -900,7 +900,7 @@ class AllegroKukaBase(VecTask):
         resets = self._compute_resets(is_success)
         self.reset_buf[:] = resets
 
-        self.extras["successes"] = self.prev_episode_successes.mean()
+        self.extras["successes"] = self.prev_episode_successes
         self.true_objective = self._true_objective()
         self.extras["true_objective"] = self.true_objective
 

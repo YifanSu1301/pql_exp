@@ -185,7 +185,7 @@ class ShadowHand(VecTask):
 
         self.reset_goal_buf = self.reset_buf.clone()
         self.successes = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
-        self.consecutive_successes = torch.zeros(1, dtype=torch.float, device=self.device)
+        self.consecutive_successes = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
         self.av_factor = to_torch(self.av_factor, dtype=torch.float, device=self.device)
 
@@ -421,7 +421,7 @@ class ShadowHand(VecTask):
             self.max_consecutive_successes, self.av_factor, (self.object_type == "pen")
         )
 
-        self.extras['consecutive_successes'] = self.consecutive_successes.mean()
+        self.extras['successes'] = self.consecutive_successes
 
         if self.print_success_stat:
             self.total_resets = self.total_resets + self.reset_buf.sum()
@@ -792,10 +792,7 @@ def compute_hand_reward(
     if max_consecutive_successes > 0:
         reward = torch.where(progress_buf >= max_episode_length - 1, reward + 0.5 * fall_penalty, reward)
 
-    num_resets = torch.sum(resets)
-    finished_cons_successes = torch.sum(successes * resets.float())
-
-    cons_successes = torch.where(num_resets > 0, av_factor*finished_cons_successes/num_resets + (1.0 - av_factor)*consecutive_successes, consecutive_successes)
+    cons_successes = torch.where(resets > 0, successes, consecutive_successes)
 
     return reward, resets, goal_resets, progress_buf, successes, cons_successes
 
