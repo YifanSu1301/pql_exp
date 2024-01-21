@@ -20,7 +20,7 @@ no_tgt_actor: True
 
 p_learner_gpu: 1
 v_learner_gpu: 1
-num_gpus: 2
+visible_devices: null
 num_cpus: 40
 
 noise:

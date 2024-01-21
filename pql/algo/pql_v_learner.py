@@ -24,7 +24,7 @@ class PQLVLearner:
         self.cfg = cfg
         self.obs_dim = obs_dim
         self.action_dim = action_dim
-        print("CUDA_VISIBLE_DEVICES", os.environ["CUDA_VISIBLE_DEVICES"])
+        os.environ["CUDA_VISIBLE_DEVICES"] = self.cfg.algo.visible_devices
         self.device = torch.device(f"cuda:{self.cfg.algo.v_learner_gpu}")
 
         if self.cfg.algo.distl and "Distributional" not in self.cfg.algo.cri_class:

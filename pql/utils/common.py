@@ -1,5 +1,6 @@
 import ast
 from datetime import datetime
+import os
 import platform
 import random
 from collections import deque
@@ -185,6 +186,8 @@ def preprocess_cfg(cfg):
     
     cfg.logging.wandb.group = f'{cfg.task.name}_{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
     cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'
+    
+    cfg.algo.visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES')
 
 
 def capture_keyboard_interrupt():

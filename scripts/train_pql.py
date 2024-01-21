@@ -1,3 +1,4 @@
+import os
 import time
 from copy import deepcopy
 from itertools import count
@@ -26,10 +27,10 @@ from pql.utils.common import preprocess_cfg
 
 @hydra.main(config_path=pql.LIB_PATH.joinpath('cfg').as_posix(), config_name="default")
 def main(cfg: DictConfig):
-    ray.init(num_gpus=cfg.algo.num_gpus,
+    ray.init(num_gpus=torch.cuda.device_count(),
              num_cpus=cfg.algo.num_cpus,
              include_dashboard=False)
-    if cfg.algo.num_gpus == 1:
+    if torch.cuda.device_count() == 1:
         cfg.algo.v_learner_gpu = 0
         cfg.algo.p_learner_gpu = 0
     preprocess_cfg(cfg)
