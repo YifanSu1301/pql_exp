@@ -10,7 +10,7 @@ hydra:
 
 num_envs: 4096
 eval_num_envs: 150
-device: 'cuda'
+device: 'cuda:0'
 sim_device: ${.device}
 rl_device: ${.device}
 graphics_device_id: 0

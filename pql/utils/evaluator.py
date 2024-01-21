@@ -111,7 +111,7 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
             ret_mean = return_tracker.mean()
             step_mean = step_tracker.mean()
             successes_mean = success_tracker.mean()
-            return_dict = {'rewards/step': ret_mean, 'eval/episode_length': step_mean, 'successes/step': successes_mean}
+            return_dict = {'rewards/iter': ret_mean, 'eval/episode_length': step_mean, 'successes/iter': successes_mean}
             if cfg.info_track_keys is not None:
                 for key in cfg.info_track_keys:
                     return_dict[f'eval/{key}'] = info_trackers[key].mean()
