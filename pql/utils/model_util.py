@@ -23,10 +23,11 @@ def load_model(model, model_type, cfg):
         logger.warning(f'Invalid model type:{model_type}')
 
 
-def save_model(path, actor, critic, rms, wandb_run, ret_max):
+def save_model(path, actor, critic, rms, wandb_run, ret_max, step):
     checkpoint = {'obs_rms': rms,
             'actor': actor,
-            'critic': critic
+            'critic': critic,
+            'step': step,
             }
     torch.save(checkpoint, path)  # save policy network in *.pth
 
