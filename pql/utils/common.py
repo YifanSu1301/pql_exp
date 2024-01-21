@@ -1,4 +1,5 @@
 import ast
+from datetime import datetime
 import platform
 import random
 from collections import deque
@@ -146,14 +147,13 @@ def normalize(input, normalize_tuple):
 
 
 def preprocess_cfg(cfg):
-    with open_dict(cfg):
-        cfg.available_gpus = torch.cuda.device_count()
         
     if cfg.algo.name == 'PPO':
         if cfg.isaac_param:
             peprocess_PPO_cfg(cfg)
     elif cfg.algo.name == 'PQL':
-        check_device(cfg)
+        pass 
+        # check_device(cfg)
         
     task_name = cfg.task.name
     task_reward_scale = dict(
@@ -163,23 +163,28 @@ def preprocess_cfg(cfg):
         Anymal=1.,
         FrankaCubeStack=0.1,
         ShadowHand=0.01,
-        BallBalance=0.1
+        BallBalance=0.1,
+        AllegoKuka=0.01,
     )
     # only change the scale if the user does not pass in a new scale (default is 1.0)
     if task_name in task_reward_scale and cfg.algo.reward_scale == 1:
         cfg.algo.reward_scale = task_reward_scale[task_name]
-
+    
     task_max_time = dict(
-        AllegroHand=4800,
+        AllegroHand=200000,
         Ant=3600,
         Humanoid=3600,
         Anymal=1800,
         FrankaCubeStack=3600,
-        ShadowHand=4800,
-        BallBalance=3600
+        ShadowHand=200000,
+        BallBalance=3600,
+        AllegoKuka=200000,
     )
     if task_name in task_max_time and cfg.max_time == 3600:
         cfg.max_time = task_max_time[task_name]
+    
+    cfg.logging.wandb.group = f'{cfg.task.name}_{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
+    cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'
 
 
 def capture_keyboard_interrupt():

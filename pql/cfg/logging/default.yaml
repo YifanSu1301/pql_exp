@@ -1,9 +1,9 @@
 wandb:
-  project: pql-sweep
+  project: pql_test
   mode: 'online'
   tags: null
   group: null
-  entity: null
+  entity: jayeshs999
   name: null
   settings:
     ignore_globs: [ '*.pt' ]
