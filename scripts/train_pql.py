@@ -161,7 +161,9 @@ def main(cfg: DictConfig):
         log_info = {
             "train/critic_loss": critic_loss,
             "train/actor_loss": actor_loss,
-            "train/return": pql_actor.return_tracker.mean(),
+            "train/rewards": pql_actor.return_tracker.mean(),
+            "train/successes" : pql_actor.success_tracker.mean(),
+            "train/success_tolerance" : pql_actor.success_tolerance_tracker.mean(),
             "train/episode_length": pql_actor.step_tracker.mean(),
             "train/critic_update_times": critic_update_times,
             "train/actor_update_times": actor_update_times,

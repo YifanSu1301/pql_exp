@@ -22,6 +22,8 @@ class PQLActor:
 
         self.return_tracker = Tracker(self.cfg.algo.tracker_len)
         self.step_tracker = Tracker(self.cfg.algo.tracker_len)
+        self.success_tracker = Tracker(self.cfg.algo.tracker_len)
+        self.success_tolerance_tracker = Tracker(1)
         self.current_returns = torch.zeros(self.cfg.num_envs, dtype=torch.float32, device=self.sim_device)
         self.current_lengths = torch.zeros(self.cfg.num_envs, dtype=torch.float32, device=self.sim_device)
 
@@ -132,6 +134,10 @@ class PQLActor:
         env_done_indices = torch.where(done)[0]
         self.return_tracker.update(self.current_returns[env_done_indices])
         self.step_tracker.update(self.current_lengths[env_done_indices])
+        if 'successes' in info:
+            self.success_tracker.update(info['successes'][env_done_indices])
+        if 'scalars' in info and 'success_tolerance' in info['scalars']:
+            self.success_tolerance_tracker.update(info['scalars']['success_tolerance'])
         self.current_returns[env_done_indices] = 0
         self.current_lengths[env_done_indices] = 0
 
