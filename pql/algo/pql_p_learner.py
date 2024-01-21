@@ -18,7 +18,7 @@ class PQLPLearner:
         self.cfg = cfg
         self.obs_dim = obs_dim
         self.action_dim = action_dim
-        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join([str(i) for i in range(cfg.available_gpus)])
+        print("CUDA_VISIBLE_DEVICES", os.environ["CUDA_VISIBLE_DEVICES"])
         self.device = torch.device(f"cuda:{self.cfg.algo.p_learner_gpu}")
 
         act_class = load_class_from_path(self.cfg.algo.act_class,
