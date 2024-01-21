@@ -179,9 +179,9 @@ def preprocess_cfg(cfg):
         FrankaCubeStack=3600,
         ShadowHand=200000,
         BallBalance=3600,
-        AllegoKuka=200000,
+        AllegroKuka=200000,
     )
-    if task_name in task_max_time and cfg.max_time == 3600:
+    if task_name in task_max_time:
         cfg.max_time = task_max_time[task_name]
     
     cfg.logging.wandb.group = f'{cfg.task.name}_{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
