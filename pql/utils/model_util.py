@@ -17,6 +17,8 @@ def load_model(model, model_type, cfg):
             logger.warning(f'Observation normalization is enabled, but loaded weight contains no normalization info.')
             return
         model.load_state_dict(weights[model_type])
+    elif model_type == "step":
+        return weights[model_type]
     else:
         logger.warning(f'Invalid model type:{model_type}')
 

@@ -6,6 +6,7 @@ from itertools import count
 import isaacgym
 import pql
 import hydra
+from pql.utils.model_util import load_model
 import ray
 import torch
 import wandb
@@ -53,6 +54,10 @@ def main(cfg: DictConfig):
     pql_actor.actor = deepcopy(actor).to(sim_device)
 
     global_steps = 0
+    if cfg.artifact is not None:
+        global_steps = load_model(None, "step", cfg)
+        print("Loaded global steps: ", global_steps)
+
     evaluator = Evaluator(cfg=cfg, wandb_run=wandb_run)
 
     pql_actor.reset_agent()

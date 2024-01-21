@@ -126,6 +126,7 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
                             critic=critic.state_dict(),
                             rms=normalizer.get_states() if cfg.algo.obs_norm else None,
                             wandb_run=wandb_run,
+                            step=step,
                             ret_max=ret_max)
             child.send(return_dict)
     child.close()
