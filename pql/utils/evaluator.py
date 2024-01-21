@@ -69,8 +69,10 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
                 break
             return_tracker = Tracker(tracker_capacity)
             step_tracker = Tracker(tracker_capacity)
+            success_tracker = Tracker(tracker_capacity)
             current_returns = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
             current_lengths = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
+            current_successes = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
             obs = env.reset()
             for i_step in range(max_step):  # run an episode
                 if cfg.algo.obs_norm:
@@ -80,10 +82,13 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
                 next_obs, reward, done, info = env.step(action)
                 current_returns += reward
                 current_lengths += 1
+                current_successes = info['successes']
                 env_done_indices = torch.where(done)[0]
 
                 return_tracker.update(current_returns[env_done_indices])
                 step_tracker.update(current_lengths[env_done_indices])
+                success_tracker.update(current_successes[env_done_indices])
+
                 current_returns[env_done_indices] = 0
                 current_lengths[env_done_indices] = 0
                 if cfg.info_track_keys is not None:
@@ -105,7 +110,8 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
 
             ret_mean = return_tracker.mean()
             step_mean = step_tracker.mean()
-            return_dict = {'eval/return': ret_mean, 'eval/episode_length': step_mean}
+            successes_mean = success_tracker.mean()
+            return_dict = {'rewards/step': ret_mean, 'eval/episode_length': step_mean, 'successes/step': successes_mean}
             if cfg.info_track_keys is not None:
                 for key in cfg.info_track_keys:
                     return_dict[f'eval/{key}'] = info_trackers[key].mean()
