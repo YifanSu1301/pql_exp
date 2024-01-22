@@ -17,17 +17,19 @@ def load_model(model, model_type, cfg):
             logger.warning(f'Observation normalization is enabled, but loaded weight contains no normalization info.')
             return
         model.load_state_dict(weights[model_type])
-    elif model_type == "step":
+    elif model_type in ["step", "train_env_state", "eval_env_state"]:
         return weights[model_type]
     else:
         logger.warning(f'Invalid model type:{model_type}')
 
 
-def save_model(path, actor, critic, rms, wandb_run, ret_max, step):
+def save_model(path, actor, critic, rms, wandb_run, ret_max, step, train_env_state, eval_env_state):
     checkpoint = {'obs_rms': rms,
             'actor': actor,
             'critic': critic,
             'step': step,
+            'train_env_state': train_env_state,
+            'eval_env_state': eval_env_state,
             }
     torch.save(checkpoint, path)  # save policy network in *.pth
 

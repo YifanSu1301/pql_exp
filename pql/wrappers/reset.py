@@ -20,3 +20,9 @@ class ResetEnvWrapper:
 
     def step(self, actions):
         return self.env.step(actions)
+
+    def get_env_state(self):
+        return self.env.get_env_state()
+    
+    def set_env_state(self, state):
+        self.env.set_env_state(state)

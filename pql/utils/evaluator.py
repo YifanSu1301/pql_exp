@@ -8,7 +8,7 @@ import torch
 
 from pql.utils.common import Tracker
 
-from pql.utils.model_util import save_model
+from pql.utils.model_util import load_model, save_model
 
 
 class Evaluator:
@@ -28,8 +28,8 @@ class Evaluator:
         logger.warning("Created evaluaton process!")
         self.start_time = time.time()
 
-    def eval_policy(self, policy, value, step=0, normalizer=None):
-        self.parent.send([cloudpickle.dumps(policy), cloudpickle.dumps(value), step, normalizer])
+    def eval_policy(self, policy, value, step=0, normalizer=None, train_env_state=None):
+        self.parent.send([cloudpickle.dumps(policy), cloudpickle.dumps(value), step, normalizer, train_env_state])
 
     def check_if_should_stop(self, step=None):
         if self.cfg.max_step is not None:
@@ -48,6 +48,9 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
     if create_task_env_func is None:
         from pql.utils.isaacgym_util import create_task_env as create_task_env_func
     env = create_task_env_func(cfg, num_envs=cfg.eval_num_envs)
+    if cfg.artifact is not None:
+        env_state = load_model(None, "eval_env_state", cfg)
+        env.set_env_state(env_state)
     num_envs = cfg.eval_num_envs
     max_step = env.max_episode_length
     ret_max = float('-inf')
@@ -66,7 +69,7 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
     success_tracker = Tracker(tracker_capacity)
     with torch.inference_mode():
         while True:
-            [actor, critic, step, normalizer] = child.recv()
+            [actor, critic, step, normalizer, train_env_state] = child.recv()
             actor = pickle.loads(actor)
             critic = pickle.loads(critic)
             if actor is None:
@@ -132,6 +135,8 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
                             rms=normalizer.get_states() if cfg.algo.obs_norm else None,
                             wandb_run=wandb_run,
                             step=step,
-                            ret_max=ret_max)
+                            ret_max=ret_max,
+                            train_env_state=train_env_state,
+                            eval_env_state=env.get_env_state())
             child.send(return_dict)
     child.close()

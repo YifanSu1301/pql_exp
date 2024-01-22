@@ -23,3 +23,9 @@ class FlatObEnvWrapper:
     def step(self, actions):
         next_obs, rewards, dones, info = self.env.step(actions)
         return next_obs[self.ob_key], rewards, dones, info
+
+    def get_env_state(self):
+        return self.env.get_env_state()
+    
+    def set_env_state(self, state):
+        self.env.set_env_state(state)

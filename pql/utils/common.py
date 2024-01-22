@@ -187,7 +187,7 @@ def preprocess_cfg(cfg):
     project_map = {
         "AllegroHand": "allegro_hand",
         "ShadowHand": "shadow_hand",
-        "AllegoKuka": "allegro_kuka",
+        "AllegroKuka": "allegro_kuka",
         "Ant": "ant",
         "Humanoid": "humanoid",
         "Anymal": "anymal",
@@ -195,7 +195,10 @@ def preprocess_cfg(cfg):
         "BallBalance": "ball_balance",
     }
     if not cfg.logging.wandb.project:
-        cfg.logging.wandb.project = f'dexpbt_{project_map[cfg.task.name]}' + (f'_{cfg.task.subtask}' if 'subtask' in cfg.task else '')
+        if cfg.artifact is not None:
+            cfg.logging.wandb.project = cfg.artifact.split("/")[1]
+        else:
+            cfg.logging.wandb.project = f'dexpbt_{project_map[cfg.task.name]}' + (f'_{cfg.task.env.subtask}' if 'subtask' in cfg.task.env else '')
     if not cfg.logging.wandb.group:
         cfg.logging.wandb.group = f'{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
         cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'

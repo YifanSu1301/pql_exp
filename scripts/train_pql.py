@@ -39,6 +39,9 @@ def main(cfg: DictConfig):
     set_random_seed(cfg.seed)
     wandb_run = init_wandb(cfg)
     env = create_task_env(cfg)
+    if cfg.artifact is not None:
+        env_state = load_model(None, "train_env_state", cfg)
+        env.set_env_state(env_state)
 
     sim_device = torch.device(f"{cfg.sim_device}")
     v_learner_device = torch.device(f"cuda:{cfg.algo.v_learner_gpu}")
@@ -189,7 +192,7 @@ def main(cfg: DictConfig):
                         f"{log_info['train/critic_update_times']:12.2f}"
                         f"{log_info['train/actor_update_times']:12.2f}")
             evaluator.eval_policy(pql_actor.actor, critic, normalizer=pql_actor.obs_rms,
-                                  step=global_steps)
+                                  step=global_steps, train_env_state=pql_actor.env.get_env_state())
 
         if evaluator.check_if_should_stop(global_steps):
             break
