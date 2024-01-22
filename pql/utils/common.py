@@ -184,8 +184,21 @@ def preprocess_cfg(cfg):
     if task_name in task_max_time:
         cfg.max_time = task_max_time[task_name]
     
-    cfg.logging.wandb.group = f'{cfg.task.name}_{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
-    cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'
+    project_map = {
+        "AllegroHand": "allegro_hand",
+        "ShadowHand": "shadow_hand",
+        "AllegoKuka": "allegro_kuka",
+        "Ant": "ant",
+        "Humanoid": "humanoid",
+        "Anymal": "anymal",
+        "FrankaCubeStack": "franka_cube_stack",
+        "BallBalance": "ball_balance",
+    }
+    if not cfg.logging.wandb.project:
+        cfg.logging.wandb.project = f'dexpbt_{project_map[cfg.task.name]}' + (f'_{cfg.task.subtask}' if 'subtask' in cfg.task else '')
+    if not cfg.logging.wandb.group:
+        cfg.logging.wandb.group = f'{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
+        cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'
     
     cfg.algo.visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES')
 

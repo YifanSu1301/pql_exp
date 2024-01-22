@@ -61,6 +61,9 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
         info_track_step = {key: cfg.info_track_step[idx] for idx, key in enumerate(info_track_keys)}
         traj_info_values = {key: torch.zeros(cfg.num_envs, dtype=torch.float32, device='cpu') for key in info_track_keys}
 
+    return_tracker = Tracker(tracker_capacity)
+    step_tracker = Tracker(tracker_capacity)
+    success_tracker = Tracker(tracker_capacity)
     with torch.inference_mode():
         while True:
             [actor, critic, step, normalizer] = child.recv()
@@ -68,13 +71,9 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
             critic = pickle.loads(critic)
             if actor is None:
                 break
-            return_tracker = Tracker(tracker_capacity)
-            step_tracker = Tracker(tracker_capacity)
-            success_tracker = Tracker(tracker_capacity)
             success_tolerance_tracker = Tracker(1)
             current_returns = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
             current_lengths = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
-            current_successes = torch.zeros(num_envs, dtype=torch.float32, device=cfg.device)
             obs = env.reset()
             for i_step in range(max_step):  # run an episode
                 if cfg.algo.obs_norm:
@@ -89,8 +88,12 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
                 return_tracker.update(current_returns[env_done_indices])
                 step_tracker.update(current_lengths[env_done_indices])
                 if 'successes' in info:
+                    if i_step == max_step - 1:
+                        print("Finished successes: ", info['successes'].mean())
                     success_tracker.update(info['successes'][env_done_indices])
                 if 'scalars' in info and 'success_tolerance' in info['scalars']:
+                    if i_step == max_step - 1:
+                        print("Success tolerance: ", info['scalars']['success_tolerance'])
                     success_tolerance_tracker.update(info['scalars']['success_tolerance'])
 
                 current_returns[env_done_indices] = 0
@@ -120,7 +123,7 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
             if cfg.info_track_keys is not None:
                 for key in cfg.info_track_keys:
                     return_dict[f'eval/{key}'] = info_trackers[key].mean()
-            if ret_mean > ret_max or (step - last_log_step) > 80000000 == 0:
+            if ret_mean > ret_max or (step - last_log_step) > 80000000:
                 ret_max = ret_mean
                 last_log_step = step
                 save_model(path=f"{wandb_run.dir}/model.pth",

@@ -1,5 +1,5 @@
 wandb:
-  project: pql_test
+  project: null
   mode: 'online'
   tags: null
   group: null
