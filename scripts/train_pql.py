@@ -175,7 +175,7 @@ def main(cfg: DictConfig):
             "train/episode_length": pql_actor.step_tracker.mean(),
             "train/critic_update_times": critic_update_times,
             "train/actor_update_times": actor_update_times,
-            "train/global_steps": global_steps
+            "global_step": global_steps
         }
         pql_actor.add_info_tracker_log(log_info)
 
