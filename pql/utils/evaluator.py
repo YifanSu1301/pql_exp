@@ -51,6 +51,7 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
     num_envs = cfg.eval_num_envs
     max_step = env.max_episode_length
     ret_max = float('-inf')
+    last_log_step = 0
 
     tracker_capacity = num_envs
     info_track_keys = cfg.info_track_keys
@@ -119,8 +120,9 @@ def default_rollout(cfg, wandb_run, child, create_task_env_func=None):
             if cfg.info_track_keys is not None:
                 for key in cfg.info_track_keys:
                     return_dict[f'eval/{key}'] = info_trackers[key].mean()
-            if ret_mean > ret_max:
+            if ret_mean > ret_max or (step - last_log_step) > 80000000 == 0:
                 ret_max = ret_mean
+                last_log_step = step
                 save_model(path=f"{wandb_run.dir}/model.pth",
                             actor=actor.state_dict(),
                             critic=critic.state_dict(),
