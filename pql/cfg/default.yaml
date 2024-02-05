@@ -35,6 +35,7 @@ info_track_step: null # ['last', 'all-episode', 'all-step'], whether to track th
                       # up or keep track per-step values
 
 artifact: null
+local_artifact_path : null
 
 
 

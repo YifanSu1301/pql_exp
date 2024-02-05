@@ -1,16 +1,34 @@
+import glob
 import wandb
 import torch
 from loguru import logger
 from pathlib import Path
 import pql
 from pql.utils.common import load_class_from_path
+import os
 
 
 def load_model(model, model_type, cfg):
-    artifact = wandb.Api().artifact(cfg.artifact)
-    artifact.download(pql.LIB_PATH)
-    logger.warning(f'Load {model_type}')
-    weights = torch.load(Path(pql.LIB_PATH, "model.pth"))
+    if cfg.local_artifact_path is not None:
+        # find the local artifact path using id
+        id = cfg.artifact.split(":")[0].split("/")[-1]
+        subdirectories = glob.glob(f"{cfg.local_artifact_path}/**/*{id}*", recursive=True)
+        subdirectory = [path for path in subdirectories if os.path.isdir(path)][0]
+        
+        all_weights = []
+        for subdirectory in subdirectories:
+            model_path = os.path.join(subdirectory, 'files', "model.pth")
+            if not os.path.exists(model_path):
+                continue
+            weights = torch.load(model_path, map_location=None if torch.cuda.device_count() > 1 else 'cuda:0')
+            all_weights.append(weights)
+        weights = sorted(all_weights, key=lambda x: x['step'], reverse=True)[0]
+        weights["step"] -= 10000000
+    else:
+        artifact = wandb.Api().artifact(cfg.artifact)
+        artifact.download(pql.LIB_PATH)
+        logger.warning(f'Load {model_type}')
+        weights = torch.load(Path(pql.LIB_PATH, "model.pth"))
 
     if model_type in ["actor", "critic", "obs_rms"]:
         if model_type == "obs_rms" and weights[model_type] is None:

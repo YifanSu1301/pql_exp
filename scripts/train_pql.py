@@ -181,7 +181,7 @@ def main(cfg: DictConfig):
 
         if evaluator.parent.poll():
             return_dict = evaluator.parent.recv()
-            wandb.log(return_dict, step=global_steps)
+            wandb.log({**return_dict, 'global_step' : global_steps}, step=global_steps)
         if iter_t % cfg.algo.log_freq == 0:
             wandb.log(log_info, step=global_steps)
         if iter_t % cfg.algo.eval_freq == 0:

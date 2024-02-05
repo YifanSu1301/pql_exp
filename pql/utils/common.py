@@ -27,7 +27,7 @@ def init_wandb(cfg):
         wandb_id = cfg.artifact.split("/")[-1].split(":")[0]
         wandb_run = wandb.init(**wandb_kwargs, config=wandb_cfg, id=wandb_id, resume="must")
     else:
-        wandb_run = wandb.init(**wandb_kwargs, config=wandb_cfg)
+        wandb_run = wandb.init(**wandb_kwargs, config=wandb_cfg, id=f'uid_{wandb_kwargs["name"]}')
     logger.warning(f'Wandb run dir:{wandb_run.dir}')
     logger.warning(f'Project name:{wandb_run.project_name()}')
     return wandb_run
@@ -166,20 +166,24 @@ def preprocess_cfg(cfg):
         ShadowHand=0.01,
         BallBalance=0.1,
         AllegoKuka=0.01,
+        Trifinger=0.1,
+        FrankaCabinet=0.1,
     )
     # only change the scale if the user does not pass in a new scale (default is 1.0)
     if task_name in task_reward_scale and cfg.algo.reward_scale == 1:
         cfg.algo.reward_scale = task_reward_scale[task_name]
     
     task_max_time = dict(
-        AllegroHand=200000,
+        AllegroHand=300000,
         Ant=3600,
-        Humanoid=3600,
+        Humanoid=300000,
         Anymal=1800,
-        FrankaCubeStack=3600,
-        ShadowHand=200000,
+        FrankaCubeStack=300000,
+        ShadowHand=300000,
         BallBalance=3600,
-        AllegroKuka=200000,
+        AllegroKuka=300000,
+        Trifinger=300000,
+        FrankaCabinet=300000,
     )
     if task_name in task_max_time:
         cfg.max_time = task_max_time[task_name]
@@ -193,14 +197,22 @@ def preprocess_cfg(cfg):
         "Anymal": "anymal",
         "FrankaCubeStack": "franka_cube_stack",
         "BallBalance": "ball_balance",
+        "Trifinger" : "trifinger",
+        "FrankaCabinet": "franka_cabinet",
     }
+    
+    cfg.load_artifact_path = cfg.load_artifact_path or os.path.abspath(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'outputs')
+    
     if not cfg.logging.wandb.project:
         if cfg.artifact is not None:
             cfg.logging.wandb.project = cfg.artifact.split("/")[1]
         else:
             cfg.logging.wandb.project = f'dexpbt_{project_map[cfg.task.name]}' + (f'_{cfg.task.env.subtask}' if 'subtask' in cfg.task.env else '')
     if not cfg.logging.wandb.group:
-        cfg.logging.wandb.group = f'{cfg.algo.name}_{datetime.now().strftime("%d-%m_%Hh%Mm")}'
+        if cfg.artifact is not None:
+            cfg.logging.wandb.group = cfg.artifact.split("/")[-1].split(":")[0][7:]
+        else:
+            cfg.logging.wandb.group = f'{cfg.algo.name}_{cfg.seed}_{datetime.now().strftime("%d-%m_%Hh%Mm%Ss")}'
         cfg.logging.wandb.name = f'00_{cfg.logging.wandb.group}'
     
     cfg.algo.visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES')
