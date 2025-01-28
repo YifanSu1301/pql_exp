@@ -12,5 +12,5 @@ python submit_it_fb.py --num_envs=24576 \
     --seed 42  \
     --batch_size=49152 \
     --ngpus=2 \
-    --partition=devlab \
+    --partition=prod1 \
     --wandb-entity=yifansu
