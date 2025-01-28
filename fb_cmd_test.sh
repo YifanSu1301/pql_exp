@@ -4,7 +4,7 @@
 
 # Running our method
 
-cd ~/pql
+cd ~/pql_exp
 conda activate pql
 export LD_LIBRARY_PATH=$(conda info --base)/envs/pql/lib:$LD_LIBRARY_PATH
 python submit_it_fb.py --num_envs=24576 \
